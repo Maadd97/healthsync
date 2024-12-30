@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: aggregator-cronjob
+spec:
+  schedule: "0 * * * *"  # runs every hour
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: aggregator-container
+            image: your-docker-repo/aggregator-service:latest
+            args: ["/app/aggregator.py"]
+            env:
+              - name: REDSHIFT_HOST
+                value: "<your-redshift-endpoint>"
+              - name: REDSHIFT_DB
+                value: "healthdb"
+              - name: REDSHIFT_USER
+                value: "awsuser"
+              - name: REDSHIFT_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: redshift-credentials
+                    key: password
+          restartPolicy: OnFailure
